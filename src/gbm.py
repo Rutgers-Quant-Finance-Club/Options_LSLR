@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 @dataclass(frozen=True)
-class geometric_brownian_motion:
+class GeometricBrownianMotion:
 	"""	
 	Simulate geometric brownian motion paths
 

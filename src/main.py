@@ -1,8 +1,8 @@
-from gbm import geometric_brownian_motion
+from gbm import GeometricBrownianMotion
 import matplotlib.pyplot as plt
 
 def main():
-	gbm = geometric_brownian_motion(
+	gbm = GeometricBrownianMotion(
 		S0=100,
 		mu=0,
 		sigma=0.05,
