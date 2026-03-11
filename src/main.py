@@ -5,7 +5,7 @@ def main():
 	gbm = GeometricBrownianMotion(
 		S0=100,
 		mu=0,
-		sigma=0.05,
+		sig=0.05,
 		T=1,
 		num_paths=10,
 		time_steps=50

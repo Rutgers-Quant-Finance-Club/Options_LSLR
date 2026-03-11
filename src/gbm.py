@@ -11,14 +11,14 @@ class GeometricBrownianMotion:
 
 	S0: initial stock price
 	mu: drift coefficient
-	sigma: volatility 
+	sig: volatility 
 	T: time in years
 	M: number of paths/simulations
 	n: number of time steps
 	"""
 	S0: float
 	mu: float
-	sigma: float
+	sig: float
 	T: float
 	num_paths: int
 	time_steps: int
@@ -43,8 +43,8 @@ class GeometricBrownianMotion:
 		# Row 1 -> time = 0
 		# Row 2 -> time = 1dt
 		St = np.exp(
-			(self.mu - 0.5 * self.sigma**2) * dt 
-			+ self.sigma * Wt
+			(self.mu - 0.5 * self.sig**2) * dt 
+			+ self.sig * Wt
 		)
 
 		# Add initial row of t(0) = 1 to matrix
