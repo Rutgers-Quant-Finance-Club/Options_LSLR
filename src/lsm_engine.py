@@ -5,6 +5,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class LSM_Engine:
+	"""
+	K: strike price
+	r: risk-free rate
+	"""
 	gbm: GeometricBrownianMotion
 	K: float
 	r: float
