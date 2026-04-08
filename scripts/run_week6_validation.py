@@ -16,10 +16,64 @@ def _fmt(x: float | None, digits: int = 4) -> str:
     return f"{x:.{digits}f}"
 
 
+def _write_error_heatmap(rows: list, out_path: Path) -> bool:
+    """Write quant-style error heatmaps; return False if matplotlib is unavailable."""
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return False
+
+    s0_values = sorted({float(r.case.s0) for r in rows})
+    scenarios = sorted({(float(r.case.sigma), float(r.case.maturity)) for r in rows})
+
+    s0_to_i = {s0: i for i, s0 in enumerate(s0_values)}
+    scen_to_j = {scenario: j for j, scenario in enumerate(scenarios)}
+
+    american_err = np.full((len(s0_values), len(scenarios)), np.nan, dtype=np.float64)
+    early_err = np.full((len(s0_values), len(scenarios)), np.nan, dtype=np.float64)
+
+    for r in rows:
+        i = s0_to_i[float(r.case.s0)]
+        j = scen_to_j[(float(r.case.sigma), float(r.case.maturity))]
+        american_err[i, j] = float(r.american_abs_error_vs_paper)
+        early_err[i, j] = float(r.early_exercise_abs_error_vs_paper)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12.5, 5.6), constrained_layout=True)
+    panel_defs = (
+        ("American Abs Error", american_err),
+        ("Early-Exercise Abs Error", early_err),
+    )
+
+    for ax, (title, data) in zip(axes, panel_defs):
+        im = ax.imshow(data, cmap="YlOrRd", aspect="auto")
+        ax.set_title(title)
+        ax.set_xlabel("Scenario (sigma, T)")
+        ax.set_ylabel("S0")
+        ax.set_xticks(np.arange(len(scenarios)))
+        ax.set_xticklabels(
+            [f"{sigma:.2f}, {maturity:.0f}" for sigma, maturity in scenarios],
+            rotation=35,
+            ha="right",
+        )
+        ax.set_yticks(np.arange(len(s0_values)))
+        ax.set_yticklabels([f"{s0:.0f}" for s0 in s0_values])
+        for i in range(data.shape[0]):
+            for j in range(data.shape[1]):
+                ax.text(j, i, f"{data[i, j]:.4f}", ha="center", va="center", color="black", fontsize=8)
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    fig.suptitle("Week 6 Validation Error Heatmap (Table-1 Subset)")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=180)
+    plt.close(fig)
+    return True
+
+
 def main() -> None:
-    # Common mistake: passing 6 for 6% when model expects decimal (0.06).
-    rows = run_table1_subset_validation(rate=6.0, n_paths=30_000, seeds=(11, 17, 23))
+    rows = run_table1_subset_validation(n_paths=30_000, seeds=(11, 17, 23))
     norm = run_normalization_diagnostics(n_paths=30_000, seeds=(5, 13, 29))
+    heatmap_path = Path("docs/week6_validation_heatmap.png")
+    heatmap_written = _write_error_heatmap(rows, heatmap_path)
 
     mean_abs_err = float(np.mean([r.american_abs_error_vs_paper for r in rows]))
     max_abs_err = float(np.max([r.american_abs_error_vs_paper for r in rows]))
@@ -86,9 +140,21 @@ def main() -> None:
         "- Normalizing state by strike (x = S/K) materially improves numerical conditioning in high-price-scale cases."
     )
 
+    lines.append("")
+    lines.append("## Visual")
+    lines.append("")
+    if heatmap_written:
+        lines.append("Quant-style error heatmap by scenario:")
+        lines.append("")
+        lines.append("![Week 6 validation error heatmap](week6_validation_heatmap.png)")
+    else:
+        lines.append("Heatmap not generated (install matplotlib to enable plot output).")
+
     out_path = Path("docs/week6_validation_report.md")
     out_path.write_text("\n".join(lines) + "\n")
     print(out_path)
+    if heatmap_written:
+        print(heatmap_path)
 
 
 if __name__ == "__main__":

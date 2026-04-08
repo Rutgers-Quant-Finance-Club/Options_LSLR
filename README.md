@@ -165,10 +165,11 @@ Why this week mattered:
 - Weighted Laguerre polynomials are sensitive to scale; normalization must be tested, not assumed.
 
 Week 6 outcomes (current run):
+
 - Table-1 subset comparison across 12 cases (3 seeds, 30k paths/seed):
-- Mean absolute error vs paper American values: `5.1067`.
-- Max absolute error vs paper American values: `7.9157`.
-- Mean absolute error vs paper early-exercise values: `0.4325`.
+- Mean absolute error vs paper American values: `0.0182`.
+- Max absolute error vs paper American values: `0.0357`.
+- Mean absolute error vs paper early-exercise values: `0.0182`.
 - Normalization diagnostics: `x=S/K` had `0` rank-deficient slices vs `x=S` with `147` rank-deficient slices.
 
 ## Data flow
